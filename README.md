@@ -1,17 +1,17 @@
-[![Build Status](https://travis-ci.org/d3media/chunked-stream.png)](https://travis-ci.org/d3media/chunked-stream)
-chunked-stream
+[![Build Status](https://travis-ci.org/d3media/splitted.png)](https://travis-ci.org/d3media/splitted)
+splitted
 ==============
 
 A simple chunked stream
 
 ## Install 
 
-`$ npm install chunked-stream`
+`$ npm install splitted`
 
 ## Usage
 
-	var chunkedStream = require('chunked-stream'),
-	    stream = chunkedStream('output.txt', '10m');
+	var splitted = require('splitted'),
+	    stream = splitted('output.txt', '10m');
 	// Get notified when a chunk is full
 	stream.on('finish', function (file) {
 	    console.log(file);

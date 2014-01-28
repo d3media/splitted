@@ -1,14 +1,14 @@
 var assert = require('assert'),
     fs = require('fs'),
     path = require('path'),
-    chunkedStream = require('..');
-describe('chunked stream', function () {
+    splitted = require('..');
+describe('splitted stream', function () {
     var finishEvents = [],
         readyEvents = [],
         expectedFileMaxSize = 32;
     before(function (done) {
         var chunk = new Array(64 + 1).join('1'),
-            stream = chunkedStream('test', expectedFileMaxSize),
+            stream = splitted('test', expectedFileMaxSize),
             i = 5,
             j = 10;
         stream.on('finish', function (filePath) {
