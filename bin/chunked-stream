@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+var program = require('commander'),
+    pkg = require('../package'),
+    chunkedStream = require('..'),
+    stream,
+    file;
+program.version(pkg.version);
+program.option('-s, --size <bytes>', 'Max chunk size');
+program.parse(process.argv);
+file = program.args[0];
+stream = chunkedStream(file, program.size);
+process.stdin.pipe(stream).on('error', function (err) {
+    console.error(err);
+    process.exit(1);
+});

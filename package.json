@@ -1,0 +1,31 @@
+{
+    "name": "chunked-stream",
+    "version": "0.0.0",
+    "description": "A simple chunked stream",
+    "main": "chunked-stream.js",
+    "scripts": {
+        "test": "make test --no-print-directory --quiet"
+    },
+    "bin": "./bin/chunked-stream",
+    "author": "d3media AG <ops@d3media.de>",
+    "maintainers": ["Pedro Narciso García Revington <p.revington@d3media.de>"],
+    "keywords": ["chunked stream", "chunked", "stream"],
+    "license": "MIT",
+    "devDependencies": {
+        "mocha": "~1.17.1"
+    },
+    "dependencies": {
+        "byt": "~0.1.0",
+        "commander": "~2.1.0"
+    },
+    "directories": {
+        "test": "test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/d3media/chunked-stream.git"
+    },
+    "bugs": {
+        "url": "https://github.com/d3media/chunked-stream/issues"
+    }
+}
