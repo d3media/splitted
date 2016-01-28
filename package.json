@@ -1,28 +1,41 @@
 {
     "name": "splitted",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "A simple chunked stream",
     "main": "splitted.js",
     "scripts": {
         "test": "make test --no-print-directory --quiet"
     },
-    "bin": "./bin/splitted",
-    "author": "d3media AG <ops@d3media.de>",
-    "maintainers": ["Pedro Narciso García Revington <p.revington@d3media.de>"],
-    "keywords": ["chunked stream", "chunked", "stream"],
+    "bin": {
+        "splitted": "./bin/splitted"
+    },
+    "keywords": [
+        "chunked stream",
+        "chunked",
+        "stream"
+    ],
     "license": "MIT",
     "devDependencies": {
         "mocha": "~1.17.1"
     },
     "dependencies": {
+        "async": "^1.5.2",
         "byt": "~0.1.0",
         "commander": "~2.1.0"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/d3media/splitted.git"
+        "url": "git+https://github.com/d3media/splitted.git"
     },
     "bugs": {
         "url": "https://github.com/d3media/splitted/issues"
+    },
+    "engines": {
+        "node": ">=0.10"
+    },
+    "author": "Pedro Narciso García Revington <p.revington@gmail.com>",
+    "homepage": "https://github.com/d3media/splitted#readme",
+    "directories": {
+        "test": "test"
     }
 }

@@ -10,7 +10,20 @@ program.option('-s, --size <bytes>', 'Max chunk size');
 program.parse(process.argv);
 file = program.args[0];
 stream = splitted(file, program.size);
+var total = 0;
+//process.stdin.on('data',function (data){
+//	total += data.length;
+//	console.log('-------TOTAL DATA', total);
+//	stream.write(data);
+//});
+process.stdin.on('close',function(){
+	console.log('-------TOTAL DATA', total);
+});
 process.stdin.pipe(stream).on('error', function (err) {
     console.error(err);
+    process.exit(1);
+});
+stream.on('error',function(err){
+    console.error('SPLITTED ERR' +err);
     process.exit(1);
 });
