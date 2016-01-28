@@ -2,7 +2,7 @@
 splitted
 ==============
 
-A simple chunked stream
+A simple chunked file stream
 
 ## Install 
 
@@ -10,14 +10,22 @@ A simple chunked stream
 
 ## Usage
 
-	var splitted = require('splitted'),
-	    stream = splitted('output.txt', '10m');
-	// Get notified when a chunk is full
-	stream.on('finish', function (file) {
-	    console.log(file);
-	});
-	stream.write('hello');
-	// An output.txt.0 file has been created
-## Test
+As a library
+```
+var splitted = require('splitted'),
+    stream = splitted('output.txt', '10m');
+// Get notified when a chunk is full
+stream.on('chunkFinish', function (path) {
+    console.log('chunk', path);
+});
+stream.write('hello');
+// An output.txt.0 file has been created
+```
+Or as a standalone executable
+```
+$ npm install -g splitted
+$ splitted <some-file.txt some-file-splitted.txt --size 400k
+# will output some-file-splitted.txt.0..some-file-splitted.txt.N files. 
+```
 
-You can run tests with `$ npm test` command.
+
