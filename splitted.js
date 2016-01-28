@@ -1,80 +1,99 @@
+'use strict';
 var fs = require('fs'),
     byt = require('byt'),
     util = require('util'),
+    async = require('async'),
     Writable = require('stream').Writable;
 
-function ChunkedStream(_file, _size, nameFn) {
+function fileName(chunkNumber, file) {
+    return file + '.' + chunkNumber;
+}
+
+function makeNextFileName(file) {
+    var chunk = 0;
+    return function () {
+        return fileName(chunk++, file);
+    }
+}
+
+function ChunkedStream(path, maxSize, nameFn) {
     if (!(this instanceof ChunkedStream)) {
-        return new ChunkedStream(_file, _size);
+        return new ChunkedStream(path, maxSize, nameFn);
     }
 
-    function consecutiveName(file) {
-        return file + '.' + consecutiveName.chunks++;
+    if (!path) {
+        throw new Error('path is required');
     }
-    consecutiveName.chunks = 0;
     Writable.call(this);
-    this.nextFile = nameFn || consecutiveName;
-    this.file = _file;
-    this.size = byt(_size || '50m');
-    this._createWriteStream();
+    this.nextFileName = nameFn || makeNextFileName(path);
+
+    this.maxSize = byt(maxSize || '50m');
+    this.bytesWritten = 0;
+    this.queue = async.queue(function (w, cb) {
+        w(function (err) {
+            if (err) {
+                cb(err);
+            } else {
+                cb();
+            }
+        });
+    }, 1);
 }
 module.exports = ChunkedStream;
 util.inherits(ChunkedStream, Writable);
-ChunkedStream.prototype._createWriteStream = function () {
+var total = 0;
+ChunkedStream.prototype._write = function _write(chunk, encoding, cb) {
     var self = this;
-    this.currFile = self.nextFile(self.file);
-    this.writer = fs.createWriteStream(this.currFile, {
-        flags: 'a+'
-    });
-    this.writer.on('error', function (err) {
-        err.currentFile = this.currFile;
-        self.emit('error', err);
-    });
-    var finish = function (file) {
-        this.emit('finish', file);
-    }.bind(this, self.currFile);
-    this.writer.on('finish', finish);
-    this.writer.once('open', function () {
-        fs.stat(self.currFile, function (err, st) {
-            if (err) {
-                return self.emit('error', err);
-            }
-            self.writer.size = st.size;
-            self.emit('ready', self.writer);
-        });
-    });
-};
+    var pending = chunk.length;
+    var offset = 0;
+    if (!this._workingStream) {
+        this.nextChunk();
+    }
 
-function w(chunk, encoding, cb) {
-    this.writer.write(chunk, encoding);
-    this.writer.size += chunk.length;
-    cb();
-}
-ChunkedStream.prototype._write = function (chunk, encoding, cb) {
-    var overflow;
-    var self = this;
-    if (undefined === this.writer.size) {
-        return this.once('ready', function () {
-            self._write(chunk, encoding, cb);
-        });
+    function w(callback) {
+        function next(err) {
+            var slice;
+
+            if (err) {
+                return callback(err);
+            }
+            if (pending <= 0) {
+                return callback();
+            }
+
+            if (self._workingStream.bytesWritten >= self.maxSize) {
+                self.nextChunk();
+            }
+            slice = Math.min((chunk.length - offset), self.maxSize)
+
+            self._workingStream.write(chunk.slice(offset, offset + slice), encoding, next);
+
+            self.bytesWritten += slice;
+            pending -= slice;
+            offset += slice;
+
+        }
+        return next();
     }
-    overflow = (this.writer.size + chunk.length) - this.size;
-    if (overflow <= 0) {
-        w.call(this, chunk, encoding, cb);
-        return;
-    } else {
-        w.call(this, chunk.slice(0, chunk.length - overflow), encoding, function () {
-            self._chunk();
-            return self.once('ready', function () {
-                self._write(chunk.slice(chunk.length - overflow), encoding, cb);
-            });
-        });
-    }
+    this.queue.push(w, function (err) {
+        if (!cb) {
+            return;
+        }
+        if (err) {
+            return cb(err);
+        }
+        return cb();
+    });
+    return true;
 };
-ChunkedStream.prototype._chunk = function () {
-    var self = this,
-        closedChunkName = self.currFile;
-    this.writer.end();
-    this.chunks++;
-    self._createWriteStream();
+ChunkedStream.prototype.nextChunk = function nextChunk() {
+    var self = this;
+    var nextFileName = self.nextFileName();
+    if (self._workingStream) {
+        self._workingStream.end();
+    }
+    self._workingStream = fs.createWriteStream(nextFileName);
+    self._workingStream.on('finish', function () {
+        self.emit('chunkFinish', this.path);
+    });
 };
