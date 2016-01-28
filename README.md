@@ -1,6 +1,5 @@
 [![Build Status](https://travis-ci.org/d3media/splitted.png)](https://travis-ci.org/d3media/splitted)
-splitted
-==============
+#Splitted
 
 A simple chunked file stream
 
